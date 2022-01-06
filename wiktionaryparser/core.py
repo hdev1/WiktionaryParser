@@ -160,7 +160,7 @@ class WiktionaryParser(object):
             for list_element in list_tag.find_all('li'):
                 for audio_tag in list_element.find_all('div', {'class': 'mediaContainer'}):
                     audio_links.append(audio_tag.find('source')['src'])
-                    audio_tag.extract()
+                    audio_tag.extract()                
                 for nested_list_element in list_element.find_all('ul'):
                     nested_list_element.extract()
                 if list_element.text and not list_element.find('table', {'class': 'audiotable'}):
@@ -174,6 +174,7 @@ class WiktionaryParser(object):
         definition_tag = None
         for def_index, def_id, def_type in definition_id_list:
             definition_text = []
+
             span_tag = self.soup.find_all('span', {'id': def_id})[0]
             table = span_tag.parent.find_next_sibling()
             while table and table.name not in ['h3', 'h4', 'h5']:
@@ -183,7 +184,7 @@ class WiktionaryParser(object):
                     if definition_tag.text.strip():
                         definition_text.append(definition_tag.text.strip())
                 if definition_tag.name in ['ol', 'ul']:
-                    for element in definition_tag.find_all('li', recursive=False):
+                    for element in definition_tag.find_all('li', recursive=True):
                         if element.text:
                             definition_text.append(element.text.strip())
             if def_type == 'definitions':
@@ -207,8 +208,9 @@ class WiktionaryParser(object):
                         examples.append(example_text)
                     element.clear()
                 example_list.append((def_index, examples, def_type))
-                for quot_list in table.find_all(['ul', 'ol']):
-                    quot_list.clear()
+                # I have no idea what this line is supposed to do, but it breaks definitions for Latin
+                #for quot_list in table.find_all(['ul', 'ol']):
+                #    quot_list.clear()
                 table = table.find_next_sibling()
         return example_list
 
@@ -279,7 +281,9 @@ class WiktionaryParser(object):
     def fetch(self, word, language=None, old_id=None):
         language = self.language if not language else language
         response = self.session.get(self.url.format(word), params={'oldid': old_id})
-        self.soup = BeautifulSoup(response.text.replace('>\n<', '><'), 'html.parser')
+
+        # the space fixes some lists being concatenated to one long string
+        self.soup = BeautifulSoup(response.text.replace('>\n<', '> <'), 'html.parser')
         self.current_word = word
         self.clean_html()
         return self.get_word_data(language.lower())
