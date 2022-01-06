@@ -1,3 +1,7 @@
+### Reason for this fork
+
+Seems to be a bit broken for Latin stuff. No idea about other languages. This repo's sole goal is to be able to parse the classical languages correctly.
+
 ### Wiktionary Parser
 
 A python project which downloads words from English Wiktionary ([en.wiktionary.org](https://en.wiktionary.org)) and parses articles' content in an easy to use JSON format. Right now, it parses etymologies, definitions, pronunciations, examples, audio links and related words.
